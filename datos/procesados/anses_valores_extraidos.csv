@@ -1,0 +1,19 @@
+variable,periodo,valor,unidad,fuente,pagina_pdf,tipo
+aportantes_sipa_total,2009,8200000,personas,Anuario ANSES 2008-2023,17,observado
+aportantes_sipa_total,2023,11300000,personas,Anuario ANSES 2008-2023,17,observado
+aportantes_relacion_dependencia_sipa,2009,6346302,personas,Anuario ANSES 2008-2023,17 (grafico 1.1),observado
+aportantes_relacion_dependencia_sipa,2023,7344903,personas,Anuario ANSES 2008-2023,17 (grafico 1.1),observado
+beneficiarios_sipa,dic-2009,4791410,personas,Anuario ANSES 2008-2023,65 (grafico 3.1),observado
+beneficiarios_sipa,dic-2023,5983930,personas,Anuario ANSES 2008-2023,65 (grafico 3.1),observado
+aportantes_por_beneficiario,2009,1.72,razon,Anuario ANSES 2008-2023,88,observado
+aportantes_por_beneficiario,2023,1.89,razon,Anuario ANSES 2008-2023,88,observado
+aportantes_por_beneficio_sin_moratoria,2009,2.49,razon,Anuario ANSES 2008-2023,89,observado
+aportantes_por_beneficio_sin_moratoria,2023,3.36,razon,Anuario ANSES 2008-2023,89,observado
+tasa_sustitucion_haber_medio_sobre_salario_imponible,dic-2009,0.371,proporcion,Anuario ANSES 2008-2023,91 (grafico 4.3),observado
+tasa_sustitucion_haber_medio_sobre_salario_imponible,dic-2023,0.403,proporcion,Anuario ANSES 2008-2023,91 (grafico 4.3),observado
+tasa_sustitucion_haber_medio_sin_moratoria,dic-2009,0.425,proporcion,Anuario ANSES 2008-2023,91 (grafico 4.3),observado
+tasa_sustitucion_haber_medio_sin_moratoria,dic-2023,0.563,proporcion,Anuario ANSES 2008-2023,91 (grafico 4.3),observado
+beneficiarios_jubilaciones_pensiones_total,dic-2025,7908152,personas,Informe Estadisticas SS IV-2025,6-7,observado
+beneficiarios_sipa,dic-2025,6270233,personas,Informe Estadisticas SS IV-2025,7 (grafico 1),observado
+haber_medio_sipa,dic-2025,685356,pesos corrientes,Informe Estadisticas SS IV-2025,7,observado
+beneficios_previsionales_total,dic-2025,9259693,beneficios,Informe Estadisticas SS IV-2025,6,observado

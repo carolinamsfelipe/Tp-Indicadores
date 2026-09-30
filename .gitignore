@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+*.gz
+# PDFs de organismos (ANSES, INDEC): no se versionan
+datos/**/*.pdf
+datos/*.pdf
+# Salidas locales de los notebooks
+salidas_tbp/
+datos_tbp_descargados/
