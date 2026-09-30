@@ -52,9 +52,8 @@ Los PDFs de ANSES e INDEC pertenecen a los organismos y no se redistribuyen aqu�
 
 1. **En Colab** (recomendado): abrir el notebook con series reales.
 
-   [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/USUARIO/REPO/blob/main/notebooks/TBP_Argentina_Series_Reales.ipynb)
+   [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/carolinamsfelipe/Tp-Indicadores/blob/main/notebooks/TBP_Argentina_Series_Reales.ipynb)
 
-   > **PENDIENTE: reemplazar `USUARIO/REPO`** en el enlace del badge (arriba) y en la variable `RAW_BASE` de la primera celda de código del notebook, una vez que se conozca el repositorio real. Mientras tanto el badge no funciona.
 
    Sin copia local del repo, el notebook descarga los CSV necesarios desde la URL raw de GitHub (`RAW_BASE`). También busca los datos en una carpeta de Google Drive si está montada.
 2. **En local:** clonar el repo, `pip install numpy pandas matplotlib jupyter` y abrir el notebook desde `notebooks/`. Lee `../datos/procesados/` y escribe sus salidas en `notebooks/salidas_tbp/` (ignorada por git).
