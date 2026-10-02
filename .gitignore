@@ -8,3 +8,7 @@ datos/*.pdf
 # Salidas locales de los notebooks
 salidas_tbp/
 datos_tbp_descargados/
+
+# Microdatos EPH (no se suben; ver datos/eph/README.md)
+datos/eph/*
+!datos/eph/README.md

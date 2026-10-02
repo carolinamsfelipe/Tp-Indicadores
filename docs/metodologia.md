@@ -19,7 +19,7 @@ Fórmula original: `TBP(t) = N_t(1−μ)·Ā·τ / (J_{t+65}·E_r·ρ)`.
 |---|---|---|
 | `τ` | **21,77 %** = 11 % (aporte personal) + 10,77 % (contribución patronal SIPA) | Anuario ANSES 2008-2023, p. 39. Sin aportes a PAMI / obra social. Constante. |
 | `ρ` | **40,3 %**, tasa de sustitución ANSES a dic-2023 (haber medio SIPA / salario imponible medio) | Anuario ANSES, p. 91. Constante. |
-| `Ā` | Escenario **14,2** (piso sesgado) y **30** (techo legal) | 14,2 = promedio simple de varones 64 años (15,8) y mujeres 59 años (12,6), ANSES p. 46. Sesgado a la baja: ANSES sólo cuenta aportes desde jul-1994 y personas con al menos 12 meses de aporte. 30 es el requisito legal. |
+| `Ā` | Escenario **14,2** (piso sesgado) y **30** (requisito legal de referencia: es el mínimo para jubilarse, no un máximo) | 14,2 = promedio simple de varones 64 años (15,8) y mujeres 59 años (12,6), ANSES p. 46. Sesgado a la baja: ANSES sólo cuenta aportes desde jul-1994 y personas con al menos 12 meses de aporte. 30 es el requisito legal. |
 | `N_t` | DEIS hasta 2024; proyección ONU WPP 2024 (variante media) desde 2025 | Las fuentes coinciden en promedio (ONU/DEIS 1,03), pero divergen en 2023-2024 (1,09 y 1,23). |
 | `1 − μ` | Supervivencia de la cohorte hasta los 65: producto de `p_x` por grupo de edad, usando la tabla del año calendario en que se vive cada tramo | ONU WPP 2024. Más correcto que la tabla de período del año de nacimiento. |
 | `J`, `E_r` | ONU WPP 2024 en `t+65` | Proyectados; `E_r` es de período. |
@@ -31,3 +31,10 @@ Todo el movimiento de la curva proviene de la demografía (`N_t`, `1−μ`, `J`,
 ## 3. Controles sobre los datos reales
 
 Independientes de `Ā`, `τ`, `ρ`: (1) identidades algebraicas; (2) población de 65 años en `t+65` (ONU) vs `N_t · (1−μ)`: razón media 1,026 (rango 0,916-1,217; la cohorte 2024 queda fuera de [0,85; 1,20]); (3) nacimientos DEIS vs ONU.
+
+
+## Notas de corrección (02-10-2026)
+
+- **Cohorte 1956 (pico atípico):** cumple 65 en 2021 y `E_r` sale de la tabla de período de 2021 (COVID). `E_65` mínimo = 16,1; `TBP_B` máx. = 1,007; `TBP_A` máx. = 0,066 en esa cohorte. Rangos reales: `E_65` 16,1–24,6; `TBP_B` 0,66–1,01; `TBP_A` 0,018–0,066; `TBP_C` 0,43–1,13 años.
+- **Ā = 30 no es un techo:** es el requisito mínimo de años de aporte; un promedio con ceros puede quedar muy por debajo o, en carreras largas, por encima.
+- **Salto de fuente en N_t:** 413.135 (DEIS 2024) → 508.067 (ONU 2025).
