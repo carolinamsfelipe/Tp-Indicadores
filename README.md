@@ -75,6 +75,16 @@ Es un parche para comunicar incertidumbre, no resuelve el sesgo de Ā (ver Opcio
 - Qué descargar de INDEC (bases individuales trimestrales, variables `PP07H`, `CAT_OCUP`, `CH06`, etc.) y dónde dejarlo: `datos/eph/README.md`. Los microdatos no se suben al repo (línea sugerida para `.gitignore`: `datos/eph/*` y `!datos/eph/README.md`).
 - Salida prevista: un vector Ā_c por cohorte con escenarios (independientes: cota inferior, `PP07I`, supuesto), que alimenta la Opción 3 (Ā_t dinámico por cohorte).
 
+## Secciones 9 a 11 del notebook de series reales (nuevas)
+
+El notebook `notebooks/TBP_Argentina_Series_Reales.ipynb` conserva las secciones 1 a 8 y agrega, en orden:
+
+* **9. Escenario propio de natalidad (RENAPER + DEIS + INDEC).** Desde 2025 la proyección de la ONU supone un rebote que los registros no muestran. Se parte de unos 390 mil nacimientos en 2025 (RENAPER provisorio ajustado por su relación con el DEIS) y se prueban tres trayectorias de fecundidad (persistencia, recuperación lenta, caída adicional). Datos: `datos/procesados/renaper_natalidad_2012_2025.csv` y `natalidad_escenarios_2025_2035.csv`. Detalle en `docs/seccion_09_natalidad.md`.
+* **10. Consistencia de J.** El stock de 65+ de la ONU está construido con los nacimientos de la ONU; se repondera con los nacimientos propios. Salida: `datos/procesados/tbp_cohortes_J_reponderado.csv`. Detalle en `docs/seccion_10_J_reponderado.md`.
+* **11. Sensibilidad (ρ, τ, N), hipótesis y control.** Estática comparativa, descomposición de la caída del TBP y comparación con la razón de dependencia (no son pruebas estadísticas). Detalle en `docs/seccion_11_hipotesis.md`.
+
+Los escenarios de natalidad son propuestas a validar por el grupo, no pronósticos. El dato de 2025 del RENAPER es provisorio.
+
 ## Limitaciones
 
 - **`Ā` (años de aporte) es incierto:** el escenario observado (14,2) está sesgado a la baja; el legal (30) es el requisito mínimo para jubilarse, una referencia y no un máximo. El nivel del TBP no es interpretable todavía; la forma de la curva y su tendencia sí.

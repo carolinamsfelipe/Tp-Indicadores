@@ -118,3 +118,12 @@ Columna `anio` (fecha 1 de enero de cada año), `total_argentina` y un nacimient
 ### `crudos/indec_c1_proyecciones_nac_2010_2040.xls`
 
 Cuadro 1 de INDEC: población estimada al 1 de julio, total y por sexo, 2010-2040. Sin modificar.
+
+
+## Archivos agregados en las secciones 9 a 11
+
+| Archivo | Contenido | Fuente / origen |
+|---|---|---|
+| `procesados/renaper_natalidad_2012_2025.csv` | Nacimientos identificados (en miles) y TGF, total país, 2012-2025 | RENAPER, Sistema Estadístico de Población (descarga CSV del tablero); 2025 provisorio. Ver `renaper_NOTA.md` |
+| `procesados/natalidad_escenarios_2025_2035.csv` | Nacimientos y TGF 2025-2035 en tres escenarios (+ referencias ONU e INDEC) | Elaboración propia (propuesta a validar) |
+| `procesados/tbp_cohortes_J_reponderado.csv` | TBP por cohorte con J reponderado, por escenario | Elaboración propia |
