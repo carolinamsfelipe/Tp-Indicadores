@@ -83,6 +83,8 @@ El notebook `notebooks/TBP_Argentina_Series_Reales.ipynb` conserva las secciones
 * **10. Consistencia de J.** El stock de 65+ de la ONU está construido con los nacimientos de la ONU; se repondera con los nacimientos propios. Salida: `datos/procesados/tbp_cohortes_J_reponderado.csv`. Detalle en `docs/seccion_10_J_reponderado.md`.
 * **11. Sensibilidad (ρ, τ, N), hipótesis y control.** Estática comparativa, descomposición de la caída del TBP y comparación con la razón de dependencia (no son pruebas estadísticas). Detalle en `docs/seccion_11_hipotesis.md`.
 
+* **12. Calibración de Ā con microdatos de la EPH (rutina).** Módulo `src/tbp_eph.py`: descarga (modo prueba por defecto), filtro de ocupados con descuento jubilatorio, edad efectiva de ingreso y Ā por cohorte, con conexión al TBP. Probada con datos sintéticos; sin valor de Ā para Argentina hasta correrla con los microdatos. Detalle en `docs/seccion_12_eph_abar.md`.
+
 Los escenarios de natalidad son propuestas a validar por el grupo, no pronósticos. El dato de 2025 del RENAPER es provisorio.
 
 ## Limitaciones
