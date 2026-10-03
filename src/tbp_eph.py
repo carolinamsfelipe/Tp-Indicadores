@@ -19,10 +19,11 @@ AVISOS METODOLÓGICOS (leer):
     entre cohortes (modelo logit aditivo cohorte + edad). Edad, período y cohorte no se pueden separar del todo.
   * PP07H ("¿le descuentan jubilación?") se pregunta a asalariados y mide la semana de referencia, no el año.
     Una persona con descuento no necesariamente suma "años de aporte" de ley (moratorias, regímenes provinciales, etc.).
-  * La base individual no trae una variable inequívoca de aporte de cuentapropistas: por eso hay tres reglas
-    ("solo_asalariados" = cota inferior, "pp07i", "escenario") y se reportan las tres.
-  * Los nombres de variables y la lectura están basados en el diseño de registro de INDEC; verificar con la primera
-    descarga real (ver `resumen_base`).
+  * La base individual NO trae aporte de patrones/cuentapropistas (PP07H y PP07I sólo se relevan a asalariados; PP07I sólo a
+    quienes no tienen descuento): hay tres reglas ("solo_asalariados" = cota inferior; "pp07i" = descuento o aporte propio
+    del asalariado; "escenario" = pp07i + proporción supuesta de independientes aportando) y se reportan las tres.
+  * Estructura verificada con las 35 bases reales 2017-T2..2025-T4 (ver `resumen_base`): separador ';', texto ASCII/UTF-8,
+    la base individual de 2020-T4 se llama "personas" (ya contemplado).
   * No hay valor de Ā "verdadero" para Argentina hasta correr esto con datos reales. Los números del autotest son sintéticos.
 
 Uso mínimo:
@@ -120,7 +121,6 @@ def descargar_eph(destino="datos/eph", desde=DISPONIBLE_DESDE, hasta=DISPONIBLE_
     `confirmado=True`: descarga los que falten. Verifica que cada archivo sea un ZIP real (INDEC devuelve una página HTML
     con código 200 cuando el archivo no existe) y no vuelve a bajar los que ya están.
     """
-    os.makedirs(destino, exist_ok=True)
     plan = plan_descarga(destino, desde, hasta)
     faltan = plan[~plan["existe"]]
     total_mb = (faltan["bytes"].fillna(0).sum()) / 1e6
@@ -128,6 +128,7 @@ def descargar_eph(destino="datos/eph", desde=DISPONIBLE_DESDE, hasta=DISPONIBLE_
     if not confirmado:
         print("MODO PRUEBA: no se descargó nada. Para descargar: descargar_eph(..., confirmado=True)")
         return plan
+    os.makedirs(destino, exist_ok=True)        # la carpeta se crea sólo si hay descarga confirmada
     ok, fallidos = 0, []
     for _, it in faltan.iterrows():
         ruta = os.path.join(destino, it["nombre"]); tmp = ruta + ".part"
@@ -164,6 +165,11 @@ def descargar_eph(destino="datos/eph", desde=DISPONIBLE_DESDE, hasta=DISPONIBLE_
 
 
 # ================================================================== 2) LECTURA
+# INDEC nombra la base individual "usu_individual_T..." salvo 4T2020 ("EPH_usu_personas_4to.trim_2020.txt.txt"); mayúsculas y
+# subcarpetas varían entre trimestres (verificado con las 35 bases reales).
+_PAT_IND = r"usu_(individual|personas).*\.(txt|csv)$"
+
+
 def find_eph_files(rutas=("datos/eph", "../datos/eph", "../../datos/eph")):
     """Busca bases individuales (usu_individual_T*.txt/.csv, o EPH_usu_*.zip con una base individual adentro)."""
     out = []
@@ -172,12 +178,12 @@ def find_eph_files(rutas=("datos/eph", "../datos/eph", "../../datos/eph")):
             continue
         for p in sorted(glob.glob(os.path.join(r, "**", "*"), recursive=True)):
             b = os.path.basename(p).lower()
-            if os.path.isfile(p) and re.search(r"usu_individual.*\.(txt|csv)$", b):
+            if os.path.isfile(p) and re.search(_PAT_IND, b):
                 out.append({"path": p, "member": None})
             elif os.path.isfile(p) and b.endswith(".zip") and "eph_usu" in b:
                 with zipfile.ZipFile(p) as z:
                     for m in z.namelist():
-                        if re.search(r"usu_individual.*\.(txt|csv)$", m.lower()):
+                        if re.search(_PAT_IND, m.lower()):
                             out.append({"path": p, "member": m})
     return out
 
@@ -214,17 +220,28 @@ def read_all(srcs):
 
 
 def resumen_base(df):
-    """Control rápido tras cargar datos reales: filas por año, % de nulos en variables clave, valores de PP07H."""
+    """Control rápido tras cargar datos reales: filas por año, nulos, ESTADO, CAT_OCUP y PP07H/PP07I entre ocupados."""
     print("Filas por año:", df.groupby("ANO4").size().to_dict())
     print("Nulos (%):", (df[["CH06", "ESTADO", "CAT_OCUP", "PP07H", "PP07I", "PONDERA"]].isna().mean() * 100).round(1).to_dict())
-    print("ESTADO (1 ocupado, 2 desocupado, 3 inactivo):", df["ESTADO"].value_counts(dropna=False).sort_index().to_dict())
-    print("PP07H entre asalariados (1 sí, 2 no, 9 NS/NR):", df.loc[df["CAT_OCUP"] == 3, "PP07H"].value_counts(dropna=False).sort_index().to_dict())
+    print("ESTADO (0 sin entrevista indiv., 1 ocupado, 2 desocupado, 3 inactivo, 4 menor de 10):", df["ESTADO"].value_counts(dropna=False).sort_index().to_dict())
+    o = df[df["ESTADO"] == 1]
+    print("CAT_OCUP entre ocupados (1 patrón, 2 cuenta propia, 3 asalariado, 4 familiar s/rem., 9 NS/NR):", o["CAT_OCUP"].value_counts(dropna=False).sort_index().to_dict())
+    a = o[o["CAT_OCUP"] == 3]
+    print("PP07H entre asalariados ocupados (1 sí, 2 no, 9 NS/NR):", a["PP07H"].value_counts(dropna=False).sort_index().to_dict())
+    print("PP07I entre asalariados ocupados (0 = no corresponde; sólo se pregunta si PP07H==2):", a["PP07I"].value_counts(dropna=False).sort_index().to_dict())
 
 
 # ================================================================== 3) FILTRO: ocupados con descuento jubilatorio
 def add_flags(df, ind_rule=IND_RULE_DEFAULT, ind_share=IND_SHARE_DEFAULT, sexo=None):
     """Población 18-64 con entrevista individual; construye `reg` = prob. de estar aportando.
-    Asalariado (CAT_OCUP==3): reg = (PP07H==1). Independiente (1,2): según `ind_rule`. Desocupado/inactivo: 0."""
+    Verificado con las 35 bases reales (2017-T2 a 2025-T4): PP07H ("¿tiene descuento jubilatorio?") y PP07I ("¿aporta por sí
+    mismo a algún sistema jubilatorio?") sólo se relevan a ASALARIADOS (CAT_OCUP==3); PP07I sólo a quienes respondieron
+    PP07H==2. Patrones y cuentapropistas tienen PP07H/PP07I vacíos: la base individual NO trae aporte de independientes.
+    Reglas (`ind_rule`):
+      "solo_asalariados": asalariado con PP07H==1 (cota inferior). Independientes = 0.
+      "pp07i":            asalariado con PP07H==1 o PP07I==1 (descuento o aporte propio). Independientes = 0.
+      "escenario":        como "pp07i" + independientes (CAT_OCUP 1,2) con probabilidad `ind_share` (supuesto explícito).
+    Desocupado/inactivo/trabajador familiar: 0. PP07H==9 (NS/NR) cuenta como no registrado."""
     d = df[(df["CH06"] >= EDAD_MIN) & (df["CH06"] <= EDAD_MAX) & (df["ESTADO"].isin([1, 2, 3]))].copy()
     if sexo is not None:
         d = d[d["CH04"] == sexo]
@@ -232,14 +249,16 @@ def add_flags(df, ind_rule=IND_RULE_DEFAULT, ind_share=IND_SHARE_DEFAULT, sexo=N
     asal = ocupado & (d["CAT_OCUP"] == 3)
     indep = ocupado & d["CAT_OCUP"].isin([1, 2])
     reg = np.zeros(len(d))
-    reg[asal.values] = (d.loc[asal, "PP07H"] == 1).astype(float).values       # 2 (no) y 9 (NS/NR) => no registrado
-    if ind_rule == "pp07i":
-        reg[indep.values] = (d.loc[indep, "PP07I"] == 1).astype(float).values
-    elif ind_rule == "escenario":
-        if ind_share is None or not (0 <= ind_share <= 1):
-            raise ValueError("ind_rule='escenario' requiere ind_share en [0,1] (supuesto explícito).")
-        reg[indep.values] = float(ind_share)
-    elif ind_rule != "solo_asalariados":
+    desc = (d["PP07H"] == 1)
+    if ind_rule == "solo_asalariados":
+        reg[asal.values] = desc[asal].astype(float).values
+    elif ind_rule in ("pp07i", "escenario"):
+        reg[asal.values] = (desc | (d["PP07I"] == 1))[asal].astype(float).values
+        if ind_rule == "escenario":
+            if ind_share is None or not (0 <= ind_share <= 1):
+                raise ValueError("ind_rule='escenario' requiere ind_share en [0,1] (supuesto explícito).")
+            reg[indep.values] = float(ind_share)
+    else:
         raise ValueError(f"ind_rule desconocida: {ind_rule}")
     d["reg"] = reg
     d["edad"] = d["CH06"].astype(int)

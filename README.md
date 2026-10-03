@@ -83,7 +83,10 @@ El notebook `notebooks/TBP_Argentina_Series_Reales.ipynb` conserva las secciones
 * **10. Consistencia de J.** El stock de 65+ de la ONU está construido con los nacimientos de la ONU; se repondera con los nacimientos propios. Salida: `datos/procesados/tbp_cohortes_J_reponderado.csv`. Detalle en `docs/seccion_10_J_reponderado.md`.
 * **11. Sensibilidad (ρ, τ, N), hipótesis y control.** Estática comparativa, descomposición de la caída del TBP y comparación con la razón de dependencia (no son pruebas estadísticas). Detalle en `docs/seccion_11_hipotesis.md`.
 
-* **12. Calibración de Ā con microdatos de la EPH (rutina).** Módulo `src/tbp_eph.py`: descarga (modo prueba por defecto), filtro de ocupados con descuento jubilatorio, edad efectiva de ingreso y Ā por cohorte, con conexión al TBP. Probada con datos sintéticos; sin valor de Ā para Argentina hasta correrla con los microdatos. Detalle en `docs/seccion_12_eph_abar.md`.
+* **12. Calibración de Ā con microdatos de la EPH.** Módulo `src/tbp_eph.py`: descarga (modo prueba por defecto), filtro de ocupados con descuento jubilatorio, edad efectiva de ingreso y Ā por cohorte, con conexión al TBP. Corrida con las 35 bases 2017-T2 a 2025-T4: **Ā preliminar entre ~13 y ~22 años según la regla para cuentapropistas (ninguna llega a 30)**. Detalle en `docs/seccion_12_eph_abar.md`.
+* **13. ρ y τ por año (ANSES).** `src/tbp_anses.py`: ρ (tasa de sustitución) 2009-2023 recuperada de los gráficos vectoriales del Anuario (error < 0,05 pp en los extremos publicados; intermedios aproximados); τ constante como supuesto. Detalle en `docs/seccion_13_anses_rho_tau.md`.
+* **14. Esperanza de vida cohortal.** `src/tbp_mortalidad.py`: E_r cohortal (reemplaza al de período y elimina el pico de la cohorte 1956; TBP_C no cambia porque no contiene E_r). Detalle en `docs/seccion_14_er_cohortal.md`.
+* **15. Modelo avanzado.** `src/tbp_modelo_avanzado.py`: sexo (retiro varones 65 / mujeres 60), ρ con moratorias como escenario y ajuste por migración. Detalle en `docs/seccion_15_modelo_avanzado.md`.
 
 Los escenarios de natalidad son propuestas a validar por el grupo, no pronósticos. El dato de 2025 del RENAPER es provisorio.
 
