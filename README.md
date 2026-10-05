@@ -87,6 +87,7 @@ El notebook `notebooks/TBP_Argentina_Series_Reales.ipynb` conserva las secciones
 * **13. ρ y τ por año (ANSES).** `src/tbp_anses.py`: ρ (tasa de sustitución) 2009-2023 recuperada de los gráficos vectoriales del Anuario (error < 0,05 pp en los extremos publicados; intermedios aproximados); τ constante como supuesto. Detalle en `docs/seccion_13_anses_rho_tau.md`.
 * **14. Esperanza de vida cohortal.** `src/tbp_mortalidad.py`: E_r cohortal (reemplaza al de período y elimina el pico de la cohorte 1956; TBP_C no cambia porque no contiene E_r). Detalle en `docs/seccion_14_er_cohortal.md`.
 * **15. Modelo avanzado.** `src/tbp_modelo_avanzado.py`: sexo (retiro varones 65 / mujeres 60), ρ con moratorias como escenario y ajuste por migración. Detalle en `docs/seccion_15_modelo_avanzado.md`.
+* **16. Validación no econométrica y Monte Carlo.** Sensibilidad y elasticidades analíticas, descomposición contable y de varianza (Campbell-Shiller), bootstrap para Ā con microdatos EPH y simulación conjunta de Monte Carlo (10.000 iteraciones). Detalle en `docs/seccion_16_validacion.md`.
 
 Los escenarios de natalidad son propuestas a validar por el grupo, no pronósticos. El dato de 2025 del RENAPER es provisorio.
 
