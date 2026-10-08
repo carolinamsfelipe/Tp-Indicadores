@@ -1,0 +1,7 @@
+supuesto,razon_P5,razon_P50,razon_P95,P_razon_menor_1,pend_P5,pend_P95
+"base (corr N=0, J=0,5, Ā=1; sin SE muestral)",0.56901,0.610926,0.656303,1.0,-1.873554,-1.590127
+J independiente entre cohortes (corr 0),0.558765,0.610954,0.668473,1.0,-1.908561,-1.554477
+J perfectamente correlacionado (corr 1),0.581944,0.610799,0.641315,1.0,-1.828007,-1.640847
+"SE de Ā provisorio 2,6 % + corr Ā=1",0.56901,0.610926,0.656303,1.0,-1.873554,-1.590127
+"SE de Ā provisorio 2,6 % + corr Ā=0 (peor caso)",0.556029,0.610556,0.672019,1.0,-1.916114,-1.547708
+σ_N y σ_J duplicados,0.531041,0.611144,0.704781,1.0,-2.010451,-1.44783

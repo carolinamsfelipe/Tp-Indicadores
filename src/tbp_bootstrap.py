@@ -57,9 +57,9 @@ def _resolver_eph(ns=None):
     return obj
 
 
-E = _resolver_eph()
+_EPH = _resolver_eph()
 
-REGLAS = ("solo_asalariados", "pp07i", "indep50")        # mismos nombres que A_bar_* de estimar_abar
+REGLAS_BS = ("solo_asalariados", "pp07i", "indep50")        # mismos nombres que A_bar_* de estimar_abar
 _NQ = 5                                                  # n, w, wreg_solo, wreg_pp07i, wreg_indep
 
 
@@ -68,7 +68,7 @@ def _leer_texto_cluster(handle):
     cab = handle.readline()
     sep = ";" if cab.count(";") >= cab.count(",") else ","
     handle.seek(0)
-    need = set(E.NEEDED) | {"CODUSU", "AGLOMERADO"}
+    need = set(_EPH.NEEDED) | {"CODUSU", "AGLOMERADO"}
     return pd.read_csv(handle, sep=sep, usecols=lambda c: c.strip().upper() in need, low_memory=False,
                        dtype={"CODUSU": str})
 
@@ -86,7 +86,7 @@ def read_individual_cluster(src):
     for c in df.columns:
         if c != "CODUSU":
             df[c] = pd.to_numeric(df[c], errors="coerce")
-    faltan = (set(E.OBLIGATORIAS) | {"CODUSU"}) - set(df.columns)
+    faltan = (set(_EPH.OBLIGATORIAS) | {"CODUSU"}) - set(df.columns)
     if faltan:
         raise ValueError(f"Faltan columnas {sorted(faltan)} en {src}.")
     for opt in ("CAT_OCUP", "PP07H", "PP07I", "CH04", "TRIMESTRE", "AGLOMERADO"):
@@ -107,9 +107,9 @@ def preparar(df, ind_share=0.5, unidad="vivienda", estratificar=False):
     unidad = "vivienda" (CODUSU; lo correcto) | "persona" (cada fila es una unidad; bootstrap INGENUO, sólo para comparar).
     estratificar=True: remuestrea viviendas DENTRO de cada aglomerado (el diseño de la EPH es estratificado por aglomerado).
     Devuelve un dict con la matriz dispersa Q (unidades x 5*celdas) y metadatos."""
-    d_sol = E.add_flags(df, "solo_asalariados")
-    d_pp = E.add_flags(df, "pp07i")
-    d_ind = E.add_flags(df, "escenario", ind_share)
+    d_sol = _EPH.add_flags(df, "solo_asalariados")
+    d_pp = _EPH.add_flags(df, "pp07i")
+    d_ind = _EPH.add_flags(df, "escenario", ind_share)
     assert d_sol.index.equals(d_pp.index) and d_sol.index.equals(d_ind.index)
     idx = d_sol.index
     if unidad == "vivienda":
@@ -156,15 +156,15 @@ def _abar_desde_sumas(prep, sums, S, cohortes, modo_extrap="ultimas_k", detalle=
     nc = prep["nc"]
     n = sums[0:nc]; w = sums[nc:2 * nc]
     out, det = {}, {}
-    for q, regla in zip((2, 3, 4), REGLAS):
+    for q, regla in zip((2, 3, 4), REGLAS_BS):
         wreg = sums[q * nc:(q + 1) * nc]
-        keep = (n >= E.MIN_N_CELDA) & (w > 0)
+        keep = (n >= _EPH.MIN_N_CELDA) & (w > 0)
         cells = pd.DataFrame({"cohorte": prep["cohorte_celda"][keep], "edad": prep["edad_celda"][keep], "n": n[keep],
                               "w": w[keep], "wreg": wreg[keep]})
         cells["dens"] = cells["wreg"] / cells["w"]
-        fit = E.fit_age_cohort_logit(cells)
-        alpha_c = E.extrapolar_alpha(fit, list(cohortes), modo=modo_extrap)
-        dens = E.densidad_modelada(fit, alpha_c)
+        fit = _EPH.fit_age_cohort_logit(cells)
+        alpha_c = _EPH.extrapolar_alpha(fit, list(cohortes), modo=modo_extrap)
+        dens = _EPH.densidad_modelada(fit, alpha_c)
         out[regla] = (S * dens.values).sum(axis=1)
         if detalle:
             det[regla] = {"fit": fit, "dens": dens, "cells": cells}
@@ -174,7 +174,7 @@ def _abar_desde_sumas(prep, sums, S, cohortes, modo_extrap="ultimas_k", detalle=
 def estimacion_puntual(prep, s65, cohortes=None, modo_extrap="ultimas_k"):
     """Ā con la muestra completa (todas las unidades con peso 1). Debe coincidir con tbp_eph.estimar_abar."""
     cohortes = list(s65.index) if cohortes is None else list(cohortes)
-    S = E.supervivencia_gompertz(s65.reindex(cohortes).values)
+    S = _EPH.supervivencia_gompertz(s65.reindex(cohortes).values)
     sums = np.asarray(prep["Q"].sum(axis=0)).ravel()
     out, det = _abar_desde_sumas(prep, sums, S, cohortes, modo_extrap, detalle=True)
     return pd.DataFrame(out, index=cohortes), det, S
@@ -191,37 +191,47 @@ def contribucion_extrapolado(det, S, cohortes):
         n_ed = fit["n_edades"]
         for i, c in enumerate(cohortes):
             ed = obs.get(c, set())
-            mask = np.isin(E.EDADES, list(ed))
+            mask = np.isin(_EPH.EDADES, list(ed))
             tot = float((S[i] * dens.values[i]).sum())
             parte_obs = float((S[i] * dens.values[i])[mask].sum())
             filas.append({"cohorte": c, "regla": regla, "n_edades_obs": int(len(ed)),
-                          "alpha_extrapolado": bool(int(n_ed.get(c, 0)) < E.MIN_EDADES_COHORTE),
+                          "alpha_extrapolado": bool(int(n_ed.get(c, 0)) < _EPH.MIN_EDADES_COHORTE),
                           "frac_edades_obs": parte_obs / tot if tot > 0 else np.nan})
     return pd.DataFrame(filas)
 
 
 # ================================================================== 4) BOOTSTRAP
-_G = {}                                                    # estado compartido con los procesos hijos (fork)
+_GBS = {}                                                    # estado compartido con los procesos hijos (fork)
+
+
+def _init_worker(*args):
+    if args and args[0] is not None:
+        _GBS.update(prep=args[0], S=args[1], coh=args[2], modo=args[3], ss=args[4])
 
 
 def _una_replica(b):
-    prep, S, coh, modo, ss = _G["prep"], _G["S"], _G["coh"], _G["modo"], _G["ss"]
+    prep, S, coh, modo, ss = _GBS["prep"], _GBS["S"], _GBS["coh"], _GBS["modo"], _GBS["ss"]
     rng = np.random.default_rng(ss[b])
     m = _pesos(prep, rng)
     sums = m @ prep["Q"]
     r = _abar_desde_sumas(prep, sums, S, coh, modo)
-    return np.concatenate([r[k] for k in REGLAS])
+    return np.concatenate([r[k] for k in REGLAS_BS])
 
 
 def _correr(prep, s65, cohortes, B, seed, modo_extrap, n_jobs, verbose, etiqueta):
     cohortes = list(cohortes)
-    S = E.supervivencia_gompertz(s65.reindex(cohortes).values)
+    S = _EPH.supervivencia_gompertz(s65.reindex(cohortes).values)
     ss = np.random.SeedSequence(seed).spawn(B)               # una semilla por réplica: el resultado no depende de n_jobs
-    _G.update(prep=prep, S=S, coh=cohortes, modo=modo_extrap, ss=ss)
+    _GBS.update(prep=prep, S=S, coh=cohortes, modo=modo_extrap, ss=ss)
     t0 = time.time()
     if n_jobs and n_jobs > 1:
         import multiprocessing as mp
-        with mp.get_context("fork").Pool(n_jobs) as pool:
+        # En Linux/Colab se usa fork (rápido). En macOS fork + BLAS se cuelga: se usa spawn (requiere tbp_bootstrap importable).
+        metodo = "fork" if sys.platform.startswith("linux") else "spawn"
+        if metodo == "spawn" and __name__ == "__main__":
+            raise RuntimeError("n_jobs>1 en macOS/Windows requiere importar el módulo (import tbp_bootstrap), no correrlo como script.")
+        with mp.get_context(metodo).Pool(n_jobs, initializer=_init_worker,
+                                         initargs=(prep, S, cohortes, modo_extrap, ss) if metodo == "spawn" else (None,)) as pool:
             filas = pool.map(_una_replica, range(B), chunksize=max(1, B // (n_jobs * 8)))
     else:
         filas = []
@@ -229,14 +239,14 @@ def _correr(prep, s65, cohortes, B, seed, modo_extrap, n_jobs, verbose, etiqueta
             filas.append(_una_replica(b))
             if verbose and (b + 1) % max(1, B // 5) == 0:
                 print(f"  [{etiqueta}] réplica {b + 1}/{B}  ({time.time() - t0:.0f} s)")
-    arr = np.array(filas).reshape(B, len(REGLAS), len(cohortes))
+    arr = np.array(filas).reshape(B, len(REGLAS_BS), len(cohortes))
     return arr, time.time() - t0
 
 
 def _resumir(punto, arr, cohortes, nivel=0.95):
     a = (1 - nivel) / 2
     filas = []
-    for j, regla in enumerate(REGLAS):
+    for j, regla in enumerate(REGLAS_BS):
         x = arr[:, j, :]
         lo, hi = np.quantile(x, [a, 1 - a], axis=0)
         for i, c in enumerate(cohortes):
@@ -246,7 +256,7 @@ def _resumir(punto, arr, cohortes, nivel=0.95):
     return pd.DataFrame(filas)
 
 
-def bootstrap_abar(df, s65, B=500, seed=20260507, cohortes=None, modo_extrap="ultimas_k", ind_share=0.5,
+def bootstrap_abar(df, s65, B=1000, seed=20260507, cohortes=None, modo_extrap="ultimas_k", ind_share=0.5,
                    estratificar=False, n_jobs=1, verbose=True, prep=None):
     """Bootstrap por VIVIENDA (CODUSU) de Ā. Reajusta todo el pipeline en cada réplica. Devuelve dict con
     'tabla' (long: cohorte x regla con A_punto, se, ic95_lo, ic95_hi, sesgo_boot, n_edades_obs, alpha_extrapolado,
@@ -264,7 +274,7 @@ def bootstrap_abar(df, s65, B=500, seed=20260507, cohortes=None, modo_extrap="ul
     return {"tabla": tab, "replicas": arr, "punto": punto, "segundos": seg, "meta": meta, "prep": prep}
 
 
-def bootstrap_ingenuo(df, s65, B=200, seed=20260507, cohortes=None, modo_extrap="ultimas_k", ind_share=0.5,
+def bootstrap_ingenuo(df, s65, B=500, seed=20260507, cohortes=None, modo_extrap="ultimas_k", ind_share=0.5,
                       n_jobs=1, verbose=True):
     """Bootstrap INGENUO: remuestrea FILAS (personas-trimestre) como si fueran independientes. Subestima la incertidumbre
     porque ignora que la misma vivienda/persona aparece en varios trimestres. Sólo para mostrar cuánto."""
@@ -281,9 +291,9 @@ def trasladar_a_tbp(tabla, d, tau=0.2177, rho=0.403, tbp_col_p4=None):
     TBP_C(punto) · (límite de Ā / Ā punto). `d`: DataFrame del notebook (cohorte, N_t, S65, J, E65).
     `tbp_col_p4`: opcional, Serie cohorte -> TBP_C de una versión más refinada (p. ej. R15['TBP_C_p4']); si se da, se usa esa base."""
     base = {}
-    for regla in REGLAS:
+    for regla in REGLAS_BS:
         a = tabla[tabla["regla"] == regla].set_index("cohorte")["A_punto"]
-        x = E_tbp_con_abar(d, a, tau, rho)
+        x = _tbp_abar(d, a, tau, rho)
         base[regla] = x.set_index("cohorte")["TBP_C_Abar"]
     t = tabla.copy()
     t["TBP_C_punto"] = [base[r].get(c, np.nan) for r, c in zip(t["regla"], t["cohorte"])]
@@ -297,10 +307,18 @@ def trasladar_a_tbp(tabla, d, tau=0.2177, rho=0.403, tbp_col_p4=None):
     return t
 
 
-def E_tbp_con_abar(d, a, tau, rho):
+def _tbp_abar(d, a, tau, rho):
     x = d.set_index("cohorte").join(a.rename("A_bar_eph"), how="left")
     x["TBP_C_Abar"] = x["N_t"] * x["S65"] * x["A_bar_eph"] * tau / (x["J"] * rho)
     return x.reset_index()
+
+
+def cohortes_base_extrapolacion(det, regla="solo_asalariados", k=5):
+    """Cohortes con >= MIN_EDADES_COHORTE edades observadas cuyo efecto alpha se promedia (últimas k) para extrapolar
+    a las cohortes jóvenes/futuras (p. ej. la 2024)."""
+    fit = det[regla]["fit"]
+    ok = fit["alpha"][fit["n_edades"] >= _EPH.MIN_EDADES_COHORTE]
+    return list(ok.index[-k:])
 
 
 def comparar_con_falso(tabla, cohorte=2024, regla="solo_asalariados", se_falso=0.38, punto_falso=14.57):
@@ -314,7 +332,7 @@ def comparar_con_falso(tabla, cohorte=2024, regla="solo_asalariados", se_falso=0
 
 
 # ================================================================== 6) DATOS SINTÉTICOS Y AUTOTEST
-def banner(txt="DATOS SINTÉTICOS — no son Argentina"):
+def _banner_bs(txt="DATOS SINTÉTICOS — no son Argentina"):
     line = "#" * 78
     print("\n".join([line, "##" + txt.center(74) + "##", line]))
 
@@ -345,11 +363,11 @@ def generar_eph_sintetica_cluster(anios=range(2012, 2025), n_viv_por_celda=3, se
     return pd.concat(filas, ignore_index=True)
 
 
-def autotest(verbose=True, B=30):
+def autotest_bootstrap(verbose=True, B=30):
     """Prueba con datos SINTÉTICOS: (1) lector con CODUSU (txt y zip); (2) el punto del bootstrap coincide con
     tbp_eph.estimar_abar; (3) reproducibilidad por semilla y por n_jobs; (4) con efecto de vivienda el SE por vivienda
     es mayor que el ingenuo; (5) con réplicas = muestra completa los pesos multinomiales suman K."""
-    if verbose: banner()
+    if verbose: _banner_bs()
     df = generar_eph_sintetica_cluster()
     coh = np.arange(1990, 2031)
     s65 = pd.Series(np.clip(0.70 + 0.0035 * (coh - 1950), 0.5, 0.97), index=coh)
@@ -362,22 +380,22 @@ def autotest(verbose=True, B=30):
         with zipfile.ZipFile(zp, "w") as z:
             z.write(p, "usu_individual_T115.txt")
         os.remove(p)
-        srcs = E.find_eph_files([tmp]); assert len(srcs) == 1
+        srcs = _EPH.find_eph_files([tmp]); assert len(srcs) == 1
         lec = read_all_cluster(srcs)
         assert len(lec) == len(sub) and {"CODUSU", "AGLOMERADO"} <= set(lec.columns)
         assert lec["CODUSU"].iloc[0].startswith("V") and lec["CODUSU"].nunique() == sub["CODUSU"].nunique()
     # (2) punto == estimar_abar del módulo original
-    ref = E.estimar_abar(df.drop(columns=["CODUSU", "AGLOMERADO"]), s65, cohortes=coh)
+    ref = _EPH.estimar_abar(df.drop(columns=["CODUSU", "AGLOMERADO"]), s65, cohortes=coh)
     prep = preparar(df)
     punto, det, S = estimacion_puntual(prep, s65, coh)
-    for regla, col in zip(REGLAS, ("A_bar_solo_asalariados", "A_bar_pp07i", "A_bar_indep50")):
+    for regla, col in zip(REGLAS_BS, ("A_bar_solo_asalariados", "A_bar_pp07i", "A_bar_indep50")):
         assert np.allclose(punto[regla].values, ref[col].values, atol=1e-9), f"el punto no coincide con estimar_abar ({regla})"
     # (3) reproducibilidad
     r1 = bootstrap_abar(df, s65, B=B, seed=1, cohortes=coh, verbose=False, prep=prep)
     r2 = bootstrap_abar(df, s65, B=B, seed=1, cohortes=coh, verbose=False, prep=prep)
     r3 = bootstrap_abar(df, s65, B=B, seed=2, cohortes=coh, verbose=False, prep=prep)
     assert np.array_equal(r1["replicas"], r2["replicas"]) and not np.array_equal(r1["replicas"], r3["replicas"])
-    if hasattr(os, "fork"):
+    if sys.platform.startswith("linux") and "ipykernel" not in sys.modules:   # fork (en macOS se usa spawn: ver _correr)
         r4 = bootstrap_abar(df, s65, B=B, seed=1, cohortes=coh, verbose=False, prep=prep, n_jobs=2)
         assert np.array_equal(r1["replicas"], r4["replicas"]), "el resultado depende de n_jobs"
     # (4) cluster vs ingenuo (el efecto de vivienda y la repetición de viviendas deben ensanchar el SE)
@@ -396,7 +414,7 @@ def autotest(verbose=True, B=30):
         print(f"[sintético] cohorte {c}: SE por vivienda = {se_cl:.3f} | SE ingenuo (por fila) = {se_in:.3f} "
               f"(razón {se_cl / se_in:.2f})")
         print("Autotest OK (lector con CODUSU, punto = estimar_abar, semilla/n_jobs reproducibles, cluster > ingenuo, pesos multinomiales).")
-        banner("FIN AUTOTEST — estos números NO son Argentina")
+        _banner_bs("FIN AUTOTEST — estos números NO son Argentina")
     return r1
 
 
@@ -405,5 +423,5 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Bootstrap por vivienda de Ā (TBP)")
     ap.add_argument("--autotest", action="store_true")
     a = ap.parse_args()
-    if a.autotest: autotest()
+    if a.autotest: autotest_bootstrap()
     else: ap.print_help()

@@ -1,0 +1,12 @@
+especificacion,componente,log_puntos,pct_de_la_caida
+"A: J=65+, Ā constante",N,-0.529985,84.355933
+"A: J=65+, Ā constante",S65,0.049827,-7.930745
+"A: J=65+, Ā constante",J (65+),-0.148114,23.574812
+"A: J=65+, Ā constante",Ā,0.0,-0.0
+"A: J=65+, Ā constante",TOTAL Δln TBP_C,-0.628273,100.0
+"B: J*, Ā EPH variable",N,-0.529985,107.60139
+"B: J*, Ā EPH variable",S65,0.049826,-10.116082
+"B: J*, Ā EPH variable",J*,-0.105995,21.519887
+"B: J*, Ā EPH variable",Ā (EPH total),0.095806,-19.451285
+"B: J*, Ā EPH variable",composición sexo/retiro (residuo),-0.002197,0.44609
+"B: J*, Ā EPH variable",TOTAL Δln TBP_C,-0.492545,100.0

@@ -1,0 +1,33 @@
+resultado,grupo,frac_log,sobol_1,spearman2
+nivel 2024,N,0.005288,0.008519,0.005019
+nivel 2024,J,0.013643,0.016034,0.012603
+nivel 2024,Abar_regla,0.500033,0.488232,0.500468
+nivel 2024,tau,0.247378,0.238528,0.22984
+nivel 2024,rho,0.238766,0.224333,0.212537
+nivel 2024,(suma de primer orden),1.005108,0.975646,
+nivel 2030 (mezcla de natalidad),N,0.004852,0.007525,0.004058
+nivel 2030 (mezcla de natalidad),J,0.012786,0.014739,0.011818
+nivel 2030 (mezcla de natalidad),Abar_regla,0.47252,0.455689,0.468441
+nivel 2030 (mezcla de natalidad),tau,0.233532,0.219535,0.212704
+nivel 2030 (mezcla de natalidad),rho,0.225401,0.212233,0.204665
+nivel 2030 (mezcla de natalidad),natalidad,0.062953,0.055645,0.04911
+nivel 2030 (mezcla de natalidad),(suma de primer orden),1.012043,0.965367,
+nivel 2035 (mezcla de natalidad),N,0.004625,0.006716,0.003922
+nivel 2035 (mezcla de natalidad),J,0.011837,0.012944,0.009843
+nivel 2035 (mezcla de natalidad),Abar_regla,0.434951,0.414274,0.428938
+nivel 2035 (mezcla de natalidad),tau,0.2148,0.196698,0.19252
+nivel 2035 (mezcla de natalidad),rho,0.207322,0.194265,0.189281
+nivel 2035 (mezcla de natalidad),natalidad,0.141292,0.134163,0.111856
+nivel 2035 (mezcla de natalidad),(suma de primer orden),1.014827,0.959061,
+razón 2024/2000,N,0.427676,0.427606,0.40637
+razón 2024/2000,J,0.551648,0.547577,0.523627
+razón 2024/2000,Abar_regla,0.021203,0.020021,0.019069
+razón 2024/2000,tau,0.0,0.0,0.0
+razón 2024/2000,rho,0.0,0.0,0.0
+razón 2024/2000,(suma de primer orden),1.000526,0.995204,
+pendiente 2000-2024,N,0.422842,0.423789,0.405284
+pendiente 2000-2024,J,0.562389,0.55914,0.536651
+pendiente 2000-2024,Abar_regla,0.013401,0.015164,0.014396
+pendiente 2000-2024,tau,0.0,0.0,2e-06
+pendiente 2000-2024,rho,0.0,0.0,9e-06
+pendiente 2000-2024,(suma de primer orden),0.998632,0.998093,
